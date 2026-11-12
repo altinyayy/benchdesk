@@ -51,6 +51,29 @@ cd ~/benchdesk && git pull && docker compose up -d --build
 
 Logs: `docker compose logs -f app` · Status: `docker compose ps`
 
+## Admin panel
+
+`https://benchdesk.net/admin` — add and edit providers, plans and locations.
+Login is disabled until `ADMIN_PASSWORD` and `SESSION_SECRET` are set in `.env`
+(then `docker compose up -d` to apply). Generate both with `openssl rand -hex 24`;
+use hex values, because `$` in `.env` is interpolated by Docker Compose.
+Failed logins are limited to 5 per IP per 15 minutes.
+
+## Backups
+
+`scripts/backup.sh` writes a gzipped `pg_dump` to `~/backups` and keeps 14 days.
+Raff's daily VM backups capture that folder too. Install the nightly job (04:00 UTC):
+
+```bash
+(crontab -l 2>/dev/null; echo "0 4 * * * $HOME/benchdesk/scripts/backup.sh >> $HOME/backups/backup.log 2>&1") | crontab -
+```
+
+Restore a backup into the running database (replaces current data):
+
+```bash
+gunzip -c ~/backups/benchdesk-YYYY-MM-DD_HHMM.sql.gz | docker compose exec -T db sh -c 'dropdb -U benchdesk --force benchdesk && createdb -U benchdesk benchdesk && psql -q -o /dev/null -U benchdesk benchdesk'
+```
+
 ## Principles
 
 - Raw results are always stored; scores can be recomputed when the methodology changes.
