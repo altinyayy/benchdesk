@@ -1,0 +1,13 @@
+# TLS uses the Cloudflare Origin certificate in ./caddy/certs (not in git).
+# Cloudflare SSL/TLS mode must be "Full (strict)".
+
+www.benchdesk.net {
+	tls /certs/origin.pem /certs/origin.key
+	redir https://benchdesk.net{uri} permanent
+}
+
+benchdesk.net {
+	tls /certs/origin.pem /certs/origin.key
+	encode zstd gzip
+	reverse_proxy app:3000
+}
