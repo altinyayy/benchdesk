@@ -1,0 +1,62 @@
+# Production stack on the Raff VPS.
+#   Cloudflare (proxy, Full strict) -> Caddy :443 -> app :3000 -> db :5432
+# Only Caddy publishes ports. The database is reachable only on the internal
+# Docker network (Docker bypasses ufw for published ports, so never publish it).
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: benchdesk
+      POSTGRES_DB: benchdesk
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U benchdesk -d benchdesk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgres://benchdesk:${POSTGRES_PASSWORD}@db:5432/benchdesk
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://benchdesk:${POSTGRES_PASSWORD}@db:5432/benchdesk
+      SITE_URL: ${SITE_URL:-https://benchdesk.net}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/certs:/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
