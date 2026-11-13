@@ -26,28 +26,8 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --background: #1a1718;
-    --foreground: #e8e4e1;
-    --card: #231f20;
-    --primary: #b54a57;
-    --ring: #b54a57;
-    --sand: #6b5333;
-    --highlight: #3a3128;
-    --highlight-foreground: #e2cba4;
-    --muted: #302b2c;
-    --muted-foreground: #a19b98;
-    --border: #342e2f;
-    --track: #3a3435;
-    --score-good: #6cbf8a;
-    --score-mid: #e0a84e;
-    --score-bad: #e8875a;
-    --line: #7fa6cf;
-    --bar-other: #5e5657;
-    color-scheme: dark;
-  }
-}
+/* Light is the default for everyone. Dark only when the visitor picks it
+   (the choice is saved and applied before first paint, see layout.tsx). */
 :root[data-theme="dark"] {
   --background: #1a1718;
   --foreground: #e8e4e1;
