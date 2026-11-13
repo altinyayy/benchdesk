@@ -7,20 +7,14 @@ const EVENT = "benchdesk-theme-change";
 
 // The inline script in layout.tsx sets data-theme from localStorage before
 // first paint; this component only reads and updates that attribute.
+// Light by default; dark only when the visitor has chosen it.
 function isDark() {
-  const t = document.documentElement.dataset.theme;
-  if (t === "dark" || t === "light") return t === "dark";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return document.documentElement.dataset.theme === "dark";
 }
 
 function subscribe(onChange: () => void) {
-  const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  mq.addEventListener("change", onChange);
   window.addEventListener(EVENT, onChange);
-  return () => {
-    mq.removeEventListener("change", onChange);
-    window.removeEventListener(EVENT, onChange);
-  };
+  return () => window.removeEventListener(EVENT, onChange);
 }
 
 export function ThemeToggle() {
