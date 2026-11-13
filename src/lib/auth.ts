@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 // Single-admin login. The password and signing secret come from .env on the
 // server (ADMIN_PASSWORD, SESSION_SECRET). The cookie holds an expiry time and
@@ -38,6 +39,9 @@ export async function isAdmin(): Promise<boolean> {
   if (!value) return false;
   const [exp, sig] = value.split(".");
   if (!exp || !sig || !safeEqual(sig, sign(exp, key))) return false;
+  // Cookies are available during runtime prefetches, so opt out explicitly
+  // before reading the clock.
+  await connection();
   return Number(exp) > Date.now() / 1000;
 }
 

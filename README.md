@@ -11,6 +11,8 @@ src/app/            pages (home, /methodology)
 src/components/     UI components
 src/lib/db/         Drizzle schema and lazy DB client
 src/lib/data.ts     queries used by pages (request time only)
+src/lib/trials.ts   saving/deleting test results, score recomputation
+src/lib/yabs/       yabs.sh parser + fixtures
 drizzle/            generated SQL migrations
 scripts/migrate.mjs applies migrations (docker compose service "migrate")
 caddy/Caddyfile     reverse proxy config (certs are NOT in git)
@@ -58,6 +60,19 @@ Login is disabled until `ADMIN_PASSWORD` and `SESSION_SECRET` are set in `.env`
 (then `docker compose up -d` to apply). Generate both with `openssl rand -hex 24`;
 use hex values, because `$` in `.env` is interpolated by Docker Compose.
 Failed logins are limited to 5 per IP per 15 minutes.
+
+## Test results (yabs.sh)
+
+`/admin/trials` — paste yabs.sh output (text or `-j` JSON) for a plan. The parser
+(`src/lib/yabs/parse.ts`) turns it into metrics, rejects implausible values and
+duplicate pastes, and keeps the raw output in `raw_results`.
+
+- **Official** results are scored and ranked; **community** results are stored but never ranked.
+- Scores (`src/lib/scoring.ts`) are percentiles among all official tests, so every
+  save or delete recomputes all scores. Bump `METHODOLOGY_VERSION` when the formula changes.
+- On the test server: `curl -sL yabs.sh | bash` and paste everything it prints.
+
+Unit tests: `npm test` (parser and scoring, no database needed).
 
 ## Backups
 

@@ -2,7 +2,8 @@ export function scoreColor(v: number) {
   return v >= 70 ? "var(--score-good)" : v >= 40 ? "var(--score-mid)" : "var(--score-bad)";
 }
 
-export function Meter({ value }: { value: number }) {
+export function Meter({ value }: { value: number | null }) {
+  if (value === null) return <div className="meter" aria-hidden="true" />;
   const w = Math.max(0, Math.min(100, value));
   return (
     <div className="meter">
