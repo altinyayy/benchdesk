@@ -6,10 +6,12 @@ import { redirect } from "next/navigation";
 import { attemptLogin, logout, requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { slugify } from "@/lib/slug";
+import { deleteTrial, findTrialByInputHash, inputHash, recomputeScores, saveYabsTrial } from "@/lib/trials";
+import { parseYabs } from "@/lib/yabs/parse";
 
 const { providers, plans, locations } = schema;
 
-export type FormState = { error?: string; ok?: string };
+export type FormState = { error?: string; ok?: string; warnings?: string[] };
 
 // --- small validation helpers ---------------------------------------------
 class Invalid extends Error {}
@@ -167,4 +169,63 @@ export async function deleteLocation(fd: FormData) {
   await requireAdmin();
   await getDb().delete(locations).where(eq(locations.id, id(fd)));
   refresh();
+}
+
+// --- test results ----------------------------------------------------------
+export async function addYabsResult(_prev: FormState, fd: FormData): Promise<FormState> {
+  return run(async () => {
+    const planId = id(fd, "planId");
+    const locationRaw = String(fd.get("locationId") ?? "");
+    const locationId = locationRaw ? id(fd, "locationId") : null;
+    const source = fd.get("source") === "community" ? "community" : "official";
+    const input = String(fd.get("output") ?? "");
+
+    const db = getDb();
+    const [plan] = await db
+      .select({ providerId: plans.providerId, vcpu: plans.vcpu, ramGb: plans.ramGb, name: plans.name })
+      .from(plans)
+      .where(eq(plans.id, planId));
+    if (!plan) throw new Invalid("Plan not found.");
+    if (locationId !== null) {
+      const [loc] = await db.select({ providerId: locations.providerId }).from(locations).where(eq(locations.id, locationId));
+      if (!loc || loc.providerId !== plan.providerId) throw new Invalid("That location belongs to a different provider.");
+    }
+
+    const parsed = parseYabs(input);
+    if (!parsed.ok) throw new Invalid(parsed.error);
+    const { result } = parsed;
+
+    const hash = inputHash(input);
+    const existing = await findTrialByInputHash(hash);
+    if (existing) throw new Invalid(`This exact output was already saved as test #${existing}.`);
+
+    const warnings = [...result.warnings];
+    const { cores, ramGib } = result.system;
+    if (cores !== null && cores !== plan.vcpu)
+      warnings.push(`The server reported ${cores} CPU cores, but ${plan.name} is listed with ${plan.vcpu} vCPU.`);
+    // yabs shows usable RAM (minus kernel reserve, GiB vs GB), so only flag big gaps.
+    if (ramGib !== null && Math.abs(ramGib - plan.ramGb) / plan.ramGb > 0.25)
+      warnings.push(`The server reported ${ramGib} GiB RAM, but ${plan.name} is listed with ${plan.ramGb} GB.`);
+
+    const trialId = await saveYabsTrial({ planId, locationId, source, input, hash, result });
+    refresh();
+    return {
+      ok: `Saved as test #${trialId} with ${result.metrics.length} metrics${source === "official" ? "; scores updated" : ""}.`,
+      warnings,
+    };
+  });
+}
+
+export async function deleteTrialAction(fd: FormData) {
+  await requireAdmin();
+  await deleteTrial(id(fd));
+  refresh();
+}
+
+export async function recomputeAction(): Promise<FormState> {
+  return run(async () => {
+    const n = await recomputeScores();
+    refresh();
+    return { ok: `Recomputed scores for ${n} official test${n === 1 ? "" : "s"}.` };
+  });
 }

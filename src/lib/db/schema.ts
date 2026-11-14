@@ -130,10 +130,12 @@ export const scores = pgTable("scores", {
     .notNull()
     .unique()
     .references(() => trials.id, { onDelete: "cascade" }),
-  cpu: doublePrecision("cpu").notNull(),
-  disk: doublePrecision("disk").notNull(),
-  network: doublePrecision("network").notNull(),
-  stability: doublePrecision("stability").notNull(),
+  // A category is null when the trial has no metric for it (e.g. no 48-hour
+  // stability run yet). Overall averages the categories that are present.
+  cpu: doublePrecision("cpu"),
+  disk: doublePrecision("disk"),
+  network: doublePrecision("network"),
+  stability: doublePrecision("stability"),
   overall: doublePrecision("overall").notNull(),
   priceWeighted: doublePrecision("price_weighted").notNull(),
   methodologyVersion: text("methodology_version").notNull(),

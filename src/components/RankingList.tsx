@@ -10,10 +10,10 @@ export type RankingRow = {
   plan: string;
   spec: string;
   priceUsd: number;
-  scores: [number, number, number, number];
+  scores: [number | null, number | null, number | null, number | null];
   overall: number;
   value: number;
-  stability: number;
+  stability: number | null;
 };
 
 const LABELS = ["CPU", "Disk", "Network", "Stability"] as const;
@@ -41,7 +41,8 @@ export function SortControl({ value, onChange }: { value: SortKey; onChange: (k:
 
 export function RankingSection({ rows, title, subtitle }: { rows: RankingRow[]; title: string; subtitle: string }) {
   const [sort, setSort] = useState<SortKey>("value");
-  const sorted = [...rows].sort((a, b) => b[sort] - a[sort]);
+  // Plans without a score in the chosen category go last.
+  const sorted = [...rows].sort((a, b) => (b[sort] ?? -1) - (a[sort] ?? -1));
 
   return (
     <>
@@ -66,7 +67,7 @@ export function RankingSection({ rows, title, subtitle }: { rows: RankingRow[]; 
             <div className="mini">
               {x.scores.map((v, j) => (
                 <div key={LABELS[j]}>
-                  <b>{v}</b>
+                  <b title={v === null ? "Not measured yet" : undefined}>{v ?? "—"}</b>
                   {LABELS[j]}
                   <Meter value={v} />
                 </div>

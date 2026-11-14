@@ -148,7 +148,7 @@ async function HeroCard() {
   const values = series.map((p) => p.v);
   const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
   const variance = values.length && mean ? (Math.max(...values.map((v) => Math.abs(v - mean))) / mean) * 100 : null;
-  const scores: [string, number][] = [
+  const scores: [string, number | null][] = [
     ["CPU", best.cpu],
     ["Disk", best.disk],
     ["Network", best.network],
@@ -173,7 +173,9 @@ async function HeroCard() {
       <div className="scores">
         {scores.map(([l, v]) => (
           <div className="sc" key={l}>
-            <div className="v">{v}</div>
+            <div className="v" title={v === null ? "Not measured yet" : undefined}>
+              {v ?? "—"}
+            </div>
             <div className="l">{l}</div>
             <Meter value={v} />
           </div>
@@ -229,7 +231,7 @@ async function Rankings() {
       <RankingsShell>
         <div className="empty">
           <b>No plans ranked yet</b>
-          We only rank plans that finished the full 48-hour test. The first ones are in progress.
+          The first official tests are in progress. Plans show up here as soon as their results are in.
         </div>
       </RankingsShell>
     );

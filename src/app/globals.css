@@ -212,12 +212,18 @@ h2 { font-size: clamp(22px, 2.8vw, 28px); font-weight: 700; letter-spacing: -0.0
 .sub { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px; }
 .af { display: grid; gap: 12px; }
 .af label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted-foreground); }
-.af input:not([type="checkbox"]) { font: inherit; font-size: 15px; font-weight: 400; color: var(--foreground); background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; width: 100%; }
-.af input:focus { outline: 2px solid var(--ring); outline-offset: 0; }
+.af input:not([type="checkbox"]):not([type="radio"]), .af select, .af textarea { font: inherit; font-size: 15px; font-weight: 400; color: var(--foreground); background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; width: 100%; }
+.af textarea { font-family: var(--mono); font-size: 12.5px; line-height: 1.45; resize: vertical; }
+.af input:focus, .af select:focus, .af textarea:focus { outline: 2px solid var(--ring); outline-offset: 0; }
 .af label.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 .af-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .af-err { color: var(--score-bad); font-size: 14px; }
 .af-ok { color: var(--score-good); font-size: 14px; }
+.af-warn { margin: 0; padding-left: 18px; color: var(--score-mid); font-size: 14px; }
+.af .radios { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.af .radios legend { font-size: 13px; font-weight: 600; color: var(--muted-foreground); margin-bottom: 4px; }
+.af.inline { display: block; }
+.admin-actions { display: flex; align-items: center; gap: 8px; }
 .btn:disabled { opacity: .6; cursor: default; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .grid6 { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; }

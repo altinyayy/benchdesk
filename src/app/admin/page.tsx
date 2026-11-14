@@ -22,11 +22,16 @@ async function AdminHome() {
     <>
       <div className="admin-head">
         <h1>Admin</h1>
-        <form action={logoutAction}>
+        <div className="admin-actions">
+          <Link className="btn p sm" href="/admin/trials">
+            Test results
+          </Link>
+          <form action={logoutAction}>
           <button className="ghost" type="submit">
-            Log out
-          </button>
-        </form>
+              Log out
+            </button>
+          </form>
+        </div>
       </div>
 
       <section className="panel">

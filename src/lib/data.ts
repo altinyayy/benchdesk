@@ -21,10 +21,11 @@ export type RankedPlan = {
   cpuModel: string | null;
   startedAt: Date | null;
   finishedAt: Date | null;
-  cpu: number;
-  disk: number;
-  network: number;
-  stability: number;
+  // null = no metric for that category yet (e.g. no 48-hour stability run)
+  cpu: number | null;
+  disk: number | null;
+  network: number | null;
+  stability: number | null;
   overall: number;
   value: number;
   sevenZipMips: number | null;
@@ -108,15 +109,17 @@ export async function getRankings(): Promise<RankedPlan[]> {
     cpuModel: r.cpuModel,
     startedAt: r.startedAt,
     finishedAt: r.finishedAt,
-    cpu: Math.round(r.cpu),
-    disk: Math.round(r.disk),
-    network: Math.round(r.network),
-    stability: Math.round(r.stability),
+    cpu: roundOrNull(r.cpu),
+    disk: roundOrNull(r.disk),
+    network: roundOrNull(r.network),
+    stability: roundOrNull(r.stability),
     overall: Math.round(r.overall),
     value: r.value,
     sevenZipMips: mipsByTrial.get(r.trialId) ?? null,
   }));
 }
+
+const roundOrNull = (v: number | null) => (v === null ? null : Math.round(v));
 
 /** CPU time series from a trial's stability run, for the hero card chart. */
 export async function getCpuSeries(trialId: number): Promise<{ t: Date; v: number }[]> {
