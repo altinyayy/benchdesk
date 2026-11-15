@@ -1,0 +1,128 @@
+=== Benchdesk CPU test v1 ===
+Date (UTC) : 2026-11-15T00:45:18Z
+Processor  : Intel(R) Xeon(R) Processor @ 2.10GHz
+Threads    : 2
+sysbench   : sysbench 1.0.20
+7-Zip      : 7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+
+--- sysbench cpu, 1 thread ---
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 1
+Initializing random number generator from current time
+
+
+Prime numbers limit: 10000
+
+Initializing worker threads...
+
+Threads started!
+
+CPU speed:
+    events per second:  2673.11
+
+General statistics:
+    total time:                          5.0003s
+    total number of events:              13370
+
+Latency (ms):
+         min:                                    0.35
+         avg:                                    0.37
+         max:                                    3.11
+         95th percentile:                        0.42
+         sum:                                 4991.64
+
+Threads fairness:
+    events (avg/stddev):           13370.0000/0.00
+    execution time (avg/stddev):   4.9916/0.00
+
+--- sysbench cpu, 2 threads ---
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 2
+Initializing random number generator from current time
+
+
+Prime numbers limit: 10000
+
+Initializing worker threads...
+
+Threads started!
+
+CPU speed:
+    events per second:  5268.08
+
+General statistics:
+    total time:                          5.0004s
+    total number of events:              26352
+
+Latency (ms):
+         min:                                    0.35
+         avg:                                    0.38
+         max:                                    5.13
+         95th percentile:                        0.44
+         sum:                                 9980.81
+
+Threads fairness:
+    events (avg/stddev):           13176.0000/158.00
+    execution time (avg/stddev):   4.9904/0.00
+
+--- 7-Zip benchmark, 1 thread ---
+
+7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+ 64-bit locale=C.UTF-8 Threads:2 OPEN_MAX:20000
+
+ mt1
+Compiler: 13.2.0 GCC 13.2.0: SSE2
+Linux : 6.18.44-fc-v470 : #1 SMP PREEMPT_DYNAMIC @0 : x86_64 : KVMKVMKVM : [FB]~
+PageSize:4KB THP:madvise hwcap:6 hwcap2:2
+Intel(R) Xeon(R) Processor @ 2.10GHz (C06F2) 
+
+1T CPU Freq (MHz):  2923  2836  2886  2950  2931  3023  3109
+
+RAM size:    8024 MB,  # CPU hardware threads:   2
+RAM usage:    437 MB,  # Benchmark threads:      1
+
+                       Compressing  |                  Decompressing
+Dict     Speed Usage    R/U Rating  |      Speed Usage    R/U Rating
+         KiB/s     %   MIPS   MIPS  |      KiB/s     %   MIPS   MIPS
+
+22:       3218    99   3162   3131  |      41446    99   3567   3539
+23:       3432   100   3505   3497  |      40650    99   3536   3519
+24:       3022    99   3275   3250  |      38593    99   3416   3388
+25:       2704   100   3101   3088  |      38974    99   3496   3469
+----------------------------------  | ------------------------------
+Avr:      3094    99   3261   3242  |      39915    99   3504   3479
+Tot:              99   3382   3360
+--- 7-Zip benchmark, 2 threads ---
+
+7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+ 64-bit locale=C.UTF-8 Threads:2 OPEN_MAX:20000
+
+ mt2
+Compiler: 13.2.0 GCC 13.2.0: SSE2
+Linux : 6.18.44-fc-v470 : #1 SMP PREEMPT_DYNAMIC @0 : x86_64 : KVMKVMKVM : [FB]~
+PageSize:4KB THP:madvise hwcap:6 hwcap2:2
+Intel(R) Xeon(R) Processor @ 2.10GHz (C06F2) 
+
+1T CPU Freq (MHz):  2849  3134  3074  3167  3159  3151  3185
+1T CPU Freq (MHz): 101% 3128    99% 3174  
+
+RAM size:    8024 MB,  # CPU hardware threads:   2
+RAM usage:    444 MB,  # Benchmark threads:      2
+
+                       Compressing  |                  Decompressing
+Dict     Speed Usage    R/U Rating  |      Speed Usage    R/U Rating
+         KiB/s     %   MIPS   MIPS  |      KiB/s     %   MIPS   MIPS
+
+22:      11859   189   6101  11537  |      79564   193   3512   6793
+23:       9880   183   5498  10067  |      77663   196   3434   6723
+24:      10161   182   5995  10926  |      74226   194   3351   6516
+25:       8914   180   5654  10178  |      75774   195   3458   6744
+----------------------------------  | ------------------------------
+Avr:     10204   184   5812  10677  |      76807   195   3439   6694
+Tot:             189   4625   8686
+=== Benchdesk CPU test end ===
+

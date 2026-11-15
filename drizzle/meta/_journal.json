@@ -15,6 +15,13 @@
       "when": 1794613478374,
       "tag": "0001_nullable-category-scores",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794703753084,
+      "tag": "0002_drop-geekbench-metrics",
+      "breakpoints": true
     }
   ]
 }

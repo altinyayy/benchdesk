@@ -9,15 +9,18 @@
  * 4. Value = overall / monthly price (points per dollar).
  */
 
-export const METHODOLOGY_VERSION = "0.1";
+// 0.2: CPU from sysbench + 7-Zip instead of Geekbench (15.11.2026).
+export const METHODOLOGY_VERSION = "0.2";
 
 export type Category = "cpu" | "disk" | "network" | "stability";
 
 type MetricDef = { key: string; category: Category; higherIsBetter: boolean; label: string };
 
 export const SCORED_METRICS: MetricDef[] = [
-  { key: "geekbench6_single", category: "cpu", higherIsBetter: true, label: "Geekbench 6 single-core" },
-  { key: "geekbench6_multi", category: "cpu", higherIsBetter: true, label: "Geekbench 6 multi-core" },
+  { key: "sysbench_cpu_single_eps", category: "cpu", higherIsBetter: true, label: "sysbench CPU, 1 thread (events/s)" },
+  { key: "sysbench_cpu_multi_eps", category: "cpu", higherIsBetter: true, label: "sysbench CPU, all threads (events/s)" },
+  { key: "sevenzip_single_mips", category: "cpu", higherIsBetter: true, label: "7-Zip benchmark, 1 thread (MIPS)" },
+  { key: "sevenzip_mips", category: "cpu", higherIsBetter: true, label: "7-Zip benchmark, all threads (MIPS)" },
   { key: "yabs_fio_4k_total_iops", category: "disk", higherIsBetter: true, label: "fio 4K random IOPS (mixed R/W)" },
   { key: "yabs_fio_1m_total_mbps", category: "disk", higherIsBetter: true, label: "fio 1M throughput, MB/s (mixed R/W)" },
   { key: "yabs_iperf4_send_median_mbps", category: "network", higherIsBetter: true, label: "iperf3 send, median of locations" },

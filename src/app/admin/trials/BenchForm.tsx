@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { addYabsResult, type FormState } from "../actions";
+import { addBenchResult, type FormState } from "../actions";
 
 type Choice = {
   id: number;
@@ -14,14 +14,14 @@ type Choice = {
  * Inputs are controlled so a failed save doesn't wipe the pasted output
  * (React resets uncontrolled fields after every form action).
  */
-export function YabsForm({ providers }: { providers: Choice[] }) {
+export function BenchForm({ providers }: { providers: Choice[] }) {
   const [planId, setPlanId] = useState("");
   const [locationId, setLocationId] = useState("");
   const [source, setSource] = useState("official");
   const [output, setOutput] = useState("");
 
   const [state, formAction, pending] = useActionState(async (prev: FormState, fd: FormData) => {
-    const r = await addYabsResult(prev, fd);
+    const r = await addBenchResult(prev, fd);
     if (r.ok) setOutput("");
     return r;
   }, {});
@@ -83,7 +83,7 @@ export function YabsForm({ providers }: { providers: Choice[] }) {
       </fieldset>
 
       <label>
-        yabs.sh output (text or JSON)
+        Benchmark output (bench.sh, or yabs.sh text/JSON)
         <textarea
           name="output"
           required
@@ -91,7 +91,7 @@ export function YabsForm({ providers }: { providers: Choice[] }) {
           spellCheck={false}
           value={output}
           onChange={(e) => setOutput(e.target.value)}
-          placeholder={"# ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## #\n#              Yet-Another-Bench-Script              #\n…"}
+          placeholder={"=== Benchdesk CPU test v1 ===\nDate (UTC) : …"}
         />
       </label>
 

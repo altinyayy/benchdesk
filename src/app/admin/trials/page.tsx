@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { listPlanChoices, listTrials } from "@/lib/trials";
 import { ActionForm } from "../ActionForm";
 import { deleteTrialAction, recomputeAction } from "../actions";
-import { YabsForm } from "./YabsForm";
+import { BenchForm } from "./BenchForm";
 
 export default function TrialsPage() {
   return (
@@ -33,14 +33,14 @@ async function Trials() {
       <h1>Test results</h1>
 
       <section className="panel">
-        <h2>Add a yabs.sh result</h2>
+        <h2>Add a test result</h2>
         {hasPlans ? (
           <>
             <p className="muted">
-              On the test server, run <code>curl -sL yabs.sh | bash</code> and paste everything it prints. JSON from{" "}
-              <code>-j</code> works too.
+              On a fresh test server, run <code>curl -sL https://benchdesk.net/bench.sh | bash</code> and paste
+              everything it prints. It takes about 20 minutes: CPU tests first, then yabs.sh for disk and network.
             </p>
-            <YabsForm providers={choices} />
+            <BenchForm providers={choices} />
           </>
         ) : (
           <p className="muted">

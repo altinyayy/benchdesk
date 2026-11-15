@@ -6,7 +6,7 @@
  *
  *   yabs_fio_<bs>_<read|write|total>_mbps   MB/s (decimal), mixed 50/50 random R/W
  *   yabs_fio_<bs>_<read|write|total>_iops
- *   geekbench<N>_single / geekbench<N>_multi
+ *   geekbench<N>_single / geekbench<N>_multi    (parsed for old pastes; not stored, see bench/submission.ts)
  *   yabs_iperf4_send_median_mbps / yabs_iperf4_recv_median_mbps   (and iperf6)
  *   yabs_iperf4_ping_median_ms
  *
@@ -87,7 +87,7 @@ export function parseYabs(input: string): ParseOutcome {
   }
 
   if (result.metrics.length === 0) {
-    return { ok: false, error: "No benchmark results found (no fio, iperf3 or Geekbench section)." };
+    return { ok: false, error: "No benchmark results found (no fio or iperf3 section)." };
   }
 
   for (const m of result.metrics) {
@@ -216,7 +216,6 @@ function iperfMetrics(rows: IperfRow[]): Metric[] {
 function addSanityWarnings(r: YabsResult) {
   const keys = new Set(r.metrics.map((m) => m.key));
   if (!keys.has("yabs_fio_4k_total_iops")) r.warnings.push("No fio disk results (disk score will be empty).");
-  if (!keys.has("geekbench6_single")) r.warnings.push("No Geekbench 6 result (CPU score will be empty).");
   if (!keys.has("yabs_iperf4_send_median_mbps") && !keys.has("yabs_iperf4_recv_median_mbps"))
     r.warnings.push("No IPv4 iperf3 results (network score will be empty).");
   const busy = r.iperf.filter((x) => x.sendMbps === null || x.recvMbps === null).length;

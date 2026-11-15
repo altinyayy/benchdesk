@@ -117,10 +117,10 @@ test("rejects implausible values", () => {
   if (!r.ok) assert.match(r.error, /geekbench6_single/);
 });
 
-test("warns about missing sections", () => {
+test("yabs -g output (no Geekbench section) parses", () => {
   const noGb = fixture("current-small-vps.txt").split("Geekbench 6 Benchmark Test:")[0] + "YABS completed in 9 min 1 sec\n";
   const r = ok(noGb);
-  assert.ok(r.warnings.some((w) => w.includes("Geekbench 6")));
+  assert.ok(!r.metrics.some((m) => m.key.startsWith("geekbench")));
 });
 
 test("helpers", () => {
