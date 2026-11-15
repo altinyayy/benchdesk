@@ -41,24 +41,28 @@ export default function Methodology() {
 
       <h2>Where we are today</h2>
       <p>
-        The full test script is still being built. Until it&apos;s ready, official results come from{" "}
-        <a href="https://github.com/masonr/yet-another-bench-script">yabs.sh</a>, run by us on a clean server. That means:
+        The 48-hour stability run is still being built. Until it&apos;s ready, every official result comes from one
+        short run of our <a href="/bench.sh">bench.sh</a> script (about 20 minutes) on a clean server:
       </p>
       <ul>
         <li>
-          <strong>CPU:</strong> Geekbench 6 single-core and multi-core scores.
+          <strong>CPU:</strong> sysbench (prime numbers, 30 seconds on 1 thread and on all threads) and the 7-Zip
+          built-in benchmark (1 thread and all threads).
         </li>
         <li>
-          <strong>Disk:</strong> fio with a 50/50 mix of random reads and writes, at 4K and 1M block sizes.
+          <strong>Disk:</strong> fio through{" "}
+          <a href="https://github.com/masonr/yet-another-bench-script">yabs.sh</a>, pinned to one version, with a 50/50
+          mix of random reads and writes at 4K and 1M block sizes.
         </li>
         <li>
-          <strong>Network:</strong> iperf3 to yabs&apos; public test servers in Europe, Asia and the Americas. We use the
-          median across locations, so one busy server doesn&apos;t sink a result.
+          <strong>Network:</strong> iperf3 through yabs.sh to public test servers in Europe, Asia and the Americas. We
+          use the median across locations, so one busy server doesn&apos;t sink a result.
         </li>
         <li>
           <strong>Stability:</strong> not measured yet. Plans show &ldquo;—&rdquo; here until the 48-hour run is live.
         </li>
       </ul>
+      <p>We don&apos;t use Geekbench: its license doesn&apos;t cover publishing scores on a site like this one.</p>
 
       <h2>How scores work</h2>
       <ol>

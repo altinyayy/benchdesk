@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 import { attemptLogin, logout, requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { slugify } from "@/lib/slug";
-import { deleteTrial, findTrialByInputHash, inputHash, recomputeScores, saveYabsTrial } from "@/lib/trials";
-import { parseYabs } from "@/lib/yabs/parse";
+import { parseSubmission } from "@/lib/bench/submission";
+import { deleteTrial, findTrialByInputHash, inputHash, recomputeScores, saveTrial } from "@/lib/trials";
 
 const { providers, plans, locations } = schema;
 
@@ -172,7 +172,7 @@ export async function deleteLocation(fd: FormData) {
 }
 
 // --- test results ----------------------------------------------------------
-export async function addYabsResult(_prev: FormState, fd: FormData): Promise<FormState> {
+export async function addBenchResult(_prev: FormState, fd: FormData): Promise<FormState> {
   return run(async () => {
     const planId = id(fd, "planId");
     const locationRaw = String(fd.get("locationId") ?? "");
@@ -191,7 +191,7 @@ export async function addYabsResult(_prev: FormState, fd: FormData): Promise<For
       if (!loc || loc.providerId !== plan.providerId) throw new Invalid("That location belongs to a different provider.");
     }
 
-    const parsed = parseYabs(input);
+    const parsed = parseSubmission(input);
     if (!parsed.ok) throw new Invalid(parsed.error);
     const { result } = parsed;
 
@@ -200,14 +200,14 @@ export async function addYabsResult(_prev: FormState, fd: FormData): Promise<For
     if (existing) throw new Invalid(`This exact output was already saved as test #${existing}.`);
 
     const warnings = [...result.warnings];
-    const { cores, ramGib } = result.system;
+    const { cores, ramGib } = result;
     if (cores !== null && cores !== plan.vcpu)
       warnings.push(`The server reported ${cores} CPU cores, but ${plan.name} is listed with ${plan.vcpu} vCPU.`);
     // yabs shows usable RAM (minus kernel reserve, GiB vs GB), so only flag big gaps.
     if (ramGib !== null && Math.abs(ramGib - plan.ramGb) / plan.ramGb > 0.25)
       warnings.push(`The server reported ${ramGib} GiB RAM, but ${plan.name} is listed with ${plan.ramGb} GB.`);
 
-    const trialId = await saveYabsTrial({ planId, locationId, source, input, hash, result });
+    const trialId = await saveTrial({ planId, locationId, source, input, hash, result });
     refresh();
     return {
       ok: `Saved as test #${trialId} with ${result.metrics.length} metrics${source === "official" ? "; scores updated" : ""}.`,

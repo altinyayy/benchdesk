@@ -16,8 +16,8 @@ test("scores across trials", () => {
       trialId: 1,
       priceUsd: 5,
       metrics: {
-        geekbench6_single: 1000,
-        geekbench6_multi: 2000,
+        sysbench_cpu_single_eps: 1000,
+        sevenzip_mips: 2000,
         yabs_fio_4k_total_iops: 50000,
         yabs_fio_1m_total_mbps: 1000,
         yabs_iperf4_send_median_mbps: 900,
@@ -28,18 +28,18 @@ test("scores across trials", () => {
       trialId: 2,
       priceUsd: 10,
       metrics: {
-        geekbench6_single: 1500,
-        geekbench6_multi: 3000,
+        sysbench_cpu_single_eps: 1500,
+        sevenzip_mips: 3000,
         yabs_fio_4k_total_iops: 30000,
         yabs_fio_1m_total_mbps: 2000,
         yabs_iperf4_send_median_mbps: 2000,
         yabs_iperf4_recv_median_mbps: 2000,
       },
     },
-    // No Geekbench, no network: only a disk score.
+    // No CPU test, no network: only a disk score.
     { trialId: 3, priceUsd: 4, metrics: { yabs_fio_4k_total_iops: 70000, yabs_fio_1m_total_mbps: 500 } },
     // Nothing scorable.
-    { trialId: 4, priceUsd: 4, metrics: { geekbench5_single: 900 } },
+    { trialId: 4, priceUsd: 4, metrics: { geekbench6_single: 900 } },
   ]);
 
   const byId = new Map(scores.map((s) => [s.trialId, s]));
@@ -65,6 +65,6 @@ test("scores across trials", () => {
 });
 
 test("free plans don't divide by zero", () => {
-  const [s] = computeScores([{ trialId: 1, priceUsd: 0, metrics: { geekbench6_single: 1 } }]);
+  const [s] = computeScores([{ trialId: 1, priceUsd: 0, metrics: { sevenzip_mips: 1 } }]);
   assert.equal(s.priceWeighted, 0);
 });

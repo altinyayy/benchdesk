@@ -3,15 +3,15 @@ import { createHash } from "node:crypto";
 import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb, schema } from "./db";
 import { METHODOLOGY_VERSION, computeScores } from "./scoring";
-import type { YabsResult } from "./yabs/parse";
+import type { Submission } from "./bench/submission";
 
 const { trials, plans, providers, locations, metrics, rawResults, scores } = schema;
 
 type DB = ReturnType<typeof getDb>;
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 
-// Bump when the parser changes in a way that affects stored metrics.
-export const YABS_PARSER_VERSION = 1;
+// Bump when the parsers change in a way that affects stored metrics.
+export const PARSER_VERSION = 2;
 
 export function inputHash(input: string) {
   return createHash("sha256").update(input.replace(/\r\n/g, "\n").trim()).digest("hex");
@@ -29,20 +29,21 @@ export async function findTrialByInputHash(hash: string): Promise<number | null>
 const MIN_DATE = Date.UTC(2014, 0, 1);
 
 /** Inserts a completed trial with its metrics and raw output, then rescores everything. */
-export async function saveYabsTrial(opts: {
+export async function saveTrial(opts: {
   planId: number;
   locationId: number | null;
   source: "official" | "community";
   input: string;
   hash: string;
-  result: YabsResult;
+  result: Submission;
 }): Promise<number> {
   const { result } = opts;
   const now = Date.now();
   const sane = (d: Date | null) => (d && d.getTime() >= MIN_DATE && d.getTime() <= now + 86_400_000 ? d : null);
-  const startedAt = sane(result.startedAt);
   // Rankings sort by finishedAt, so it must always be set.
   const finishedAt = sane(result.finishedAt) ?? new Date(now);
+  const start = sane(result.startedAt);
+  const startedAt = start && start <= finishedAt ? start : null;
 
   return getDb().transaction(async (tx) => {
     const [trial] = await tx
@@ -54,7 +55,7 @@ export async function saveYabsTrial(opts: {
         status: "completed",
         startedAt,
         finishedAt,
-        cpuModel: result.system.cpuModel?.slice(0, 200) ?? null,
+        cpuModel: result.cpuModel?.slice(0, 200) ?? null,
       })
       .returning({ id: trials.id });
 
@@ -62,14 +63,21 @@ export async function saveYabsTrial(opts: {
     await tx.insert(rawResults).values({
       trialId: trial.id,
       data: {
-        kind: "yabs",
+        kind: result.cpu ? "bench.sh" : "yabs",
         sha256: opts.hash,
-        parserVersion: YABS_PARSER_VERSION,
-        format: result.format,
-        yabsVersion: result.version,
-        system: result.system,
-        iperf: result.iperf,
-        geekbenchUrls: result.geekbenchUrls,
+        parserVersion: PARSER_VERSION,
+        cpuTest: result.cpu && {
+          version: result.cpu.version,
+          sysbench: result.cpu.sysbenchVersion,
+          sevenZip: result.cpu.sevenZipVersion,
+          threads: result.cpu.threads,
+        },
+        yabs: result.yabs && {
+          format: result.yabs.format,
+          version: result.yabs.version,
+          system: result.yabs.system,
+          iperf: result.yabs.iperf,
+        },
         input: opts.input,
       },
     });

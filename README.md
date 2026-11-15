@@ -12,7 +12,9 @@ src/components/     UI components
 src/lib/db/         Drizzle schema and lazy DB client
 src/lib/data.ts     queries used by pages (request time only)
 src/lib/trials.ts   saving/deleting test results, score recomputation
+src/lib/bench/      bench.sh + submission parsers
 src/lib/yabs/       yabs.sh parser + fixtures
+public/bench.sh     the benchmark script testers run
 drizzle/            generated SQL migrations
 scripts/migrate.mjs applies migrations (docker compose service "migrate")
 caddy/Caddyfile     reverse proxy config (certs are NOT in git)
@@ -61,18 +63,22 @@ Login is disabled until `ADMIN_PASSWORD` and `SESSION_SECRET` are set in `.env`
 use hex values, because `$` in `.env` is interpolated by Docker Compose.
 Failed logins are limited to 5 per IP per 15 minutes.
 
-## Test results (yabs.sh)
+## Test results
 
-`/admin/trials` — paste yabs.sh output (text or `-j` JSON) for a plan. The parser
-(`src/lib/yabs/parse.ts`) turns it into metrics, rejects implausible values and
-duplicate pastes, and keeps the raw output in `raw_results`.
+On a fresh test server: `curl -sL https://benchdesk.net/bench.sh | bash` (~20 min),
+then paste everything into `/admin/trials`. `public/bench.sh` runs sysbench and the
+7-Zip benchmark, then yabs.sh (pinned commit, `-g` = no Geekbench) for disk and network.
+Plain yabs.sh output (text or `-j` JSON) is accepted too; it just has no CPU score.
 
+- Parsers: `src/lib/bench/submission.ts` (entry point), `src/lib/bench/cpu.ts`, `src/lib/yabs/parse.ts`.
+  Implausible values and duplicate pastes are rejected; the raw output is kept in `raw_results`.
+- **Geekbench is never stored**: its license doesn't cover publishing scores here (15.11.2026).
 - **Official** results are scored and ranked; **community** results are stored but never ranked.
 - Scores (`src/lib/scoring.ts`) are percentiles among all official tests, so every
   save or delete recomputes all scores. Bump `METHODOLOGY_VERSION` when the formula changes.
-- On the test server: `curl -sL yabs.sh | bash` and paste everything it prints.
+- Changing `bench.sh`: bump `BENCH_VERSION`; when updating yabs, pin the new commit in `YABS_COMMIT`.
 
-Unit tests: `npm test` (parser and scoring, no database needed).
+Unit tests: `npm test` (parsers and scoring, no database needed).
 
 ## Backups
 
