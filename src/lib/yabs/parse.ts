@@ -112,6 +112,8 @@ export function cleanTerminalText(s: string): string {
     s
       .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "")
       .replace(/\\033\[0K/g, "")
+      // Copying through some editors drops the ESC byte and leaves a bare "[0K".
+      .replace(/\[0K/g, "")
       .split("\n")
       // A line rewritten with \r only shows its last segment on screen.
       .map((line) => line.split("\r").filter(Boolean).pop() ?? "")

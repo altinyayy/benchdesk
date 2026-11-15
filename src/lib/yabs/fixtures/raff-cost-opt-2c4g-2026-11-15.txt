@@ -1,0 +1,216 @@
+Installing sysbench and 7-Zip...
+=== Benchdesk CPU test v1 ===
+Date (UTC) : 2026-11-15T15:09:16Z
+Processor  : AMD EPYC 7313 16-Core Processor
+Threads    : 2
+sysbench   : sysbench 1.0.20
+7-Zip      : 7-Zip 26.00 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-02-12
+
+--- sysbench cpu, 1 thread ---
+sysbench 1.0.20 (using system LuaJIT 2.1.1761786044)
+
+Running the test with following options:
+Number of threads: 1
+Initializing random number generator from current time
+
+
+Prime numbers limit: 10000
+
+Initializing worker threads...
+
+Threads started!
+
+CPU speed:
+    events per second:  3022.34
+
+General statistics:
+    total time:                          30.0003s
+    total number of events:              90678
+
+Latency (ms):
+         min:                                    0.31
+         avg:                                    0.33
+         max:                                   16.73
+         95th percentile:                        0.34
+         sum:                                29942.38
+
+Threads fairness:
+    events (avg/stddev):           90678.0000/0.00
+    execution time (avg/stddev):   29.9424/0.00
+
+--- sysbench cpu, 2 threads ---
+sysbench 1.0.20 (using system LuaJIT 2.1.1761786044)
+
+Running the test with following options:
+Number of threads: 2
+Initializing random number generator from current time
+
+
+Prime numbers limit: 10000
+
+Initializing worker threads...
+
+Threads started!
+
+CPU speed:
+    events per second:  5326.75
+
+General statistics:
+    total time:                          30.0010s
+    total number of events:              159813
+
+Latency (ms):
+         min:                                    0.31
+         avg:                                    0.37
+         max:                                   17.97
+         95th percentile:                        0.58
+         sum:                                59903.11
+
+Threads fairness:
+    events (avg/stddev):           79906.5000/3852.50
+    execution time (avg/stddev):   29.9516/0.00
+
+--- 7-Zip benchmark, 1 thread ---
+
+7-Zip 26.00 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-02-12
+ 64-bit locale=C.UTF-8 Threads:2 OPEN_MAX:1024, ASM
+
+ mt1
+Compiler:  ver:15.2.0 GCC 15.2.0 : SSE2
+Linux : 7.0.0-31-generic : #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026 : x86_64 : KVMKVMKVM : [FB]~
+PageSize:4KB THP:madvise hwcap:2 hwcap2:2
+AMD EPYC 7313 16-Core Processor
+(A00F11)
+
+1T CPU Freq (MHz):  2858  2881  2418  2800  2794  2734  2742
+
+RAM size:    4156 MB,  # CPU hardware threads:   2
+RAM usage:    437 MB,  # Benchmark threads:      1
+
+                       Compressing  |                  Decompressing
+Dict     Speed Usage    R/U Rating  |      Speed Usage    R/U Rating
+         KiB/s     %   MIPS   MIPS  |      KiB/s     %   MIPS   MIPS
+
+22:       3369   100   3281   3278  |      60232   100   5151   5143
+23:       2879   100   2931   2934  |      58608   100   5089   5073
+24:       2983   100   3210   3207  |      58031   100   5091   5095
+25:       2828   100   3232   3229  |      56403   100   5021   5020
+----------------------------------  | ------------------------------
+Avr:      3015   100   3163   3162  |      58318   100   5088   5083
+Tot:             100   4126   4122
+--- 7-Zip benchmark, 2 threads ---
+
+7-Zip 26.00 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-02-12
+ 64-bit locale=C.UTF-8 Threads:2 OPEN_MAX:1024, ASM
+
+ mt2
+Compiler:  ver:15.2.0 GCC 15.2.0 : SSE2
+Linux : 7.0.0-31-generic : #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026 : x86_64 : KVMKVMKVM : [FB]~
+PageSize:4KB THP:madvise hwcap:2 hwcap2:2
+AMD EPYC 7313 16-Core Processor
+(A00F11)
+
+1T CPU Freq (MHz):  2882  2872  2883  2899  2805  2868  2835
+1T CPU Freq (MHz):  98% 2784   101% 2782  
+2T CPU Freq (MHz): 193% 2705   185% 2398  
+
+RAM size:    4156 MB,  # CPU hardware threads:   2
+RAM usage:    444 MB,  # Benchmark threads:      2
+
+                       Compressing  |                  Decompressing
+Dict     Speed Usage    R/U Rating  |      Speed Usage    R/U Rating
+         KiB/s     %   MIPS   MIPS  |      KiB/s     %   MIPS   MIPS
+
+22:       7315   167   4260   7116  |     109792   190   4934   9374
+23:       7251   174   4248   7389  |     116374   198   5089  10073
+24:       7178   175   4421   7718  |     115786   200   5091  10165
+25:       7150   176   4639   8164  |      90995   179   4524   8099
+----------------------------------  | ------------------------------
+Avr:      7223   173   4392   7597  |     108237   192   4910   9428
+Tot:             182   4651   8512
+=== Benchdesk CPU test end ===
+
+# ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## #
+#              Yet-Another-Bench-Script              #
+#                     v2026-10-31                    #
+# https://github.com/masonr/yet-another-bench-script #
+# ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## #
+
+Sun Nov 15 15:11:22 UTC 2026
+
+Basic System Information:
+---------------------------------
+Uptime     : 0 days, 0 hours, 7 minutes
+Processor  : AMD EPYC 7313 16-Core Processor
+CPU cores  : 2 @ 3000.000 MHz
+AES-NI     : ✔ Enabled
+VM-x/AMD-V : ✔ Enabled
+RAM        : 4.0 GiB
+Swap       : 0.0 KiB
+Disk       : 29.0 GiB
+Distro     : Ubuntu 26.04.1 LTS
+Kernel     : 7.0.0-31-generic
+VM Type    : KVM
+IPv4/IPv6  : ✔ Online / ❌ Offline
+
+IPv4 Network Information:
+---------------------------------
+ISP        : Raff Technologies LLC
+ASN        : AS402429 Raff Technologies LLC
+Host       : InterLIR LLC
+Location   : Oakton, Virginia (VA)
+Country    : United States
+
+Preparing system for disk tests...
+[0KGenerating fio test file...
+[0KRunning fio random mixed R+W disk test with 4k block size...
+[0KRunning fio random mixed R+W disk test with 64k block size...
+[0KRunning fio random mixed R+W disk test with 512k block size...
+[0KRunning fio random mixed R+W disk test with 1m block size...
+[0Kfio Disk Speed Tests (Mixed R/W 50/50) (Partition /dev/vda1):
+---------------------------------
+Block Size | 4k            (IOPS) | 64k           (IOPS)
+  ------   | ---            ----  | ----           ---- 
+Read       | 121.49 MB/s  (29.6k) | 902.21 MB/s  (13.7k)
+Write      | 121.81 MB/s  (29.7k) | 906.95 MB/s  (13.8k)
+Total      | 243.31 MB/s  (59.4k) | 1.80 GB/s    (27.6k)
+           |                      |                     
+Block Size | 512k          (IOPS) | 1m            (IOPS)
+  ------   | ---            ----  | ----           ---- 
+Read       | 1.75 GB/s     (3.3k) | 1.67 GB/s     (1.5k)
+Write      | 1.84 GB/s     (3.5k) | 1.78 GB/s     (1.7k)
+Total      | 3.59 GB/s     (6.8k) | 3.46 GB/s     (3.3k)
+
+iperf3 Network Speed Tests (IPv4):
+---------------------------------
+Provider        | Location (Link)           | Send Speed      | Recv Speed      | Ping           
+-----           | -----                     | ----            | ----            | ----           
+Performing IPv4 iperf3 send test to Clouvider (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Clouvider (Attempt #1 of 3)...
+[0KClouvider       | London, UK (10G)          | 206 Mbits/sec   | 1.11 Gbits/sec  | 76.7 ms        
+Performing IPv4 iperf3 send test to Eranium (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Eranium (Attempt #1 of 3)...
+[0KEranium         | Amsterdam, NL (100G)      | 175 Mbits/sec   | 4.30 Gbits/sec  | 87.8 ms        
+Performing IPv4 iperf3 send test to Uztelecom (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Uztelecom (Attempt #1 of 3)...
+[0KUztelecom       | Tashkent, UZ (10G)        | 201 Mbits/sec   | 969 Mbits/sec   | 183 ms         
+Performing IPv4 iperf3 send test to Leaseweb (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Leaseweb (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Leaseweb (Attempt #2 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Leaseweb (Attempt #3 of 3)...
+[0KLeaseweb        | Singapore, SG (10G)       | 195 Mbits/sec   | 1.30 Gbits/sec  | 242 ms         
+Performing IPv4 iperf3 send test to Clouvider (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Clouvider (Attempt #1 of 3)...
+[0KClouvider       | Los Angeles, CA, US (10G) | 121 Mbits/sec   | 976 Mbits/sec   | 62.0 ms        
+Performing IPv4 iperf3 send test to Leaseweb (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Leaseweb (Attempt #1 of 3)...
+[0KLeaseweb        | NYC, NY, US (10G)         | 273 Mbits/sec   | 1.88 Gbits/sec  | 7.55 ms        
+Performing IPv4 iperf3 send test to Edgoo (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 send test to Edgoo (Attempt #2 of 3)...
+[0KPerforming IPv4 iperf3 send test to Edgoo (Attempt #3 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Edgoo (Attempt #1 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Edgoo (Attempt #2 of 3)...
+[0KPerforming IPv4 iperf3 recv test from Edgoo (Attempt #3 of 3)...
+[0KEdgoo           | Sao Paulo, BR (1G)        | busy            | busy            | 122 ms         
+
+YABS completed in 3 min 23 sec

@@ -92,6 +92,17 @@ test("terminal leftovers (ANSI codes, carriage returns, CRLF) are ignored", () =
   assert.equal(metric(r, "yabs_fio_4k_total_iops"), 90200);
 });
 
+test("bare [0K leftovers (ESC byte lost while copying) are ignored", () => {
+  const lines = fixture("current-small-vps.txt").split("\n");
+  const i = lines.findIndex((l) => l.startsWith("fio Disk Speed Tests"));
+  lines[i] = "[0K" + lines[i];
+  const j = lines.findIndex((l) => l.startsWith("Clouvider"));
+  lines[j] = "[0K" + lines[j];
+  const r = ok(lines.join("\n"));
+  assert.equal(metric(r, "yabs_fio_4k_total_iops"), 90200);
+  assert.equal(r.iperf[0].provider, "Clouvider");
+});
+
 test("text followed by JSON prefers the JSON", () => {
   const r = ok(fixture("readme-example.txt") + "\n" + fixture("example.json"));
   assert.equal(r.format, "json");

@@ -87,3 +87,18 @@ test("rejects garbage and implausible CPU numbers", () => {
   const fake = fixture("benchdesk-cpu.txt").replace("events per second:  2673.11", "events per second:  99999999");
   assert.equal(parseSubmission(fake).ok, false);
 });
+
+test("real bench.sh run (Raff Cost-Optimized 2 vCPU 4 GB, 15.11.2026), with and without ESC bytes", () => {
+  const raw = fixture("raff-cost-opt-2c4g-2026-11-15.txt");
+  for (const input of [raw, raw.replace(/\x1b/g, "")]) {
+    const r = ok(input);
+    assert.equal(r.cpuModel, "AMD EPYC 7313 16-Core Processor");
+    assert.equal(metric(r, "sysbench_cpu_single_eps"), 3022.34);
+    assert.equal(metric(r, "sevenzip_mips"), 8512);
+    assert.equal(metric(r, "yabs_fio_4k_total_iops"), 59400);
+    assert.equal(metric(r, "yabs_fio_1m_total_mbps"), 3460);
+    assert.equal(metric(r, "yabs_iperf4_send_median_mbps"), 198);
+    assert.equal(metric(r, "yabs_iperf4_recv_median_mbps"), 1205);
+    assert.deepEqual(r.warnings, ["1 iperf3 location(s) were busy or failed; medians use the rest."]);
+  }
+});
