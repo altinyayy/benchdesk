@@ -18,7 +18,10 @@ export default function Methodology() {
 
       <h2>The setup</h2>
       <ul>
-        <li>Each plan starts from a clean Ubuntu 24.04 install with default settings.</li>
+        <li>
+          Each plan starts from a clean install of the newest Ubuntu LTS the provider offers, with default settings. Every
+          test page lists the exact version.
+        </li>
         <li>We use only open-source tools, so anyone can repeat the test.</li>
         <li>When the test ends, the server is deleted.</li>
       </ul>
