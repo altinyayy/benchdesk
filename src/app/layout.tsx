@@ -6,9 +6,10 @@ import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import { LogoMark } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "https://benchdesk.net"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Benchdesk — independent VPS benchmarks",
     template: "%s · Benchdesk",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </Link>
           <nav aria-label="Main menu">
             <Link href="/#rankings">Rankings</Link>
+            <Link href="/providers">Providers</Link>
             <Link href="/methodology">How we test</Link>
           </nav>
           <ThemeToggle />
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="in foot">
           <span>Benchdesk · independent VPS benchmarks</span>
           <nav aria-label="Footer menu">
+            <Link href="/providers">Providers</Link>
             <Link href="/methodology">Methodology</Link>
             <a href="mailto:hello@benchdesk.net">Contact</a>
           </nav>

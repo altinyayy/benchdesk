@@ -235,3 +235,45 @@ h2 { font-size: clamp(22px, 2.8vw, 28px); font-weight: 700; letter-spacing: -0.0
 .locs { list-style: none; padding: 0; margin: 0 0 14px; }
 .locs li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .login { max-width: 360px; margin: 40px auto; }
+
+/* Ranking rows link to their plan page (whole row is clickable). */
+.row { position: relative; }
+.pn a { text-decoration: none; }
+.pn a::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+.pn a:focus-visible { outline: none; }
+.row:has(.pn a:focus-visible) { outline: 2px solid var(--ring); outline-offset: 2px; }
+.row .spon { position: relative; }
+.row.nobig { grid-template-columns: 34px minmax(0, 1.3fr) minmax(0, 2fr) 104px; }
+@media (max-width: 780px) { .row.nobig { grid-template-columns: 30px minmax(0, 1fr) auto; } }
+.rc-name a { text-decoration: none; }
+.rc-name a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.early { background: var(--highlight); color: var(--highlight-foreground); border-radius: 12px; padding: 10px 14px; font-size: 14px; margin: 0 0 12px; }
+.early b { color: var(--foreground); }
+
+/* Provider, plan and test pages */
+.page { padding-block: clamp(24px, 5vw, 48px) 0; }
+.crumbs { font-size: 14px; color: var(--muted-foreground); margin-bottom: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.crumbs a { text-decoration: none; }
+.crumbs a:hover { color: var(--foreground); }
+.page h1 { font-size: clamp(28px, 3.8vw, 40px); margin-bottom: 8px; }
+.page .lede { max-width: 62ch; margin-bottom: 18px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 6px; padding: 0; list-style: none; }
+.facts li { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 14px; }
+.facts li b { font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 12px; }
+.cards .rc h3 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+.cards .rc h3 a { text-decoration: none; }
+.cards .rc h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+@media (max-width: 480px) { .scores { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; } }
+.tablewrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 6px 12px; overflow-x: auto; }
+.tbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl a, .early a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.tag { font-size: 12px; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--border); color: var(--muted-foreground); white-space: nowrap; }
+.tag.off { background: var(--highlight); color: var(--highlight-foreground); border-color: transparent; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; font-size: 14.5px; }
+.kv dt { color: var(--muted-foreground); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.raw summary { cursor: pointer; font-weight: 600; }
+.raw pre { font-family: var(--mono); font-size: 12px; line-height: 1.45; background: var(--muted); border-radius: 12px; padding: 14px; overflow-x: auto; max-height: 520px; }
+.dir { display: grid; gap: 10px; }

@@ -2,9 +2,13 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense, cache } from "react";
 import { BarChart, Sparkline } from "@/components/Charts";
-import { Meter } from "@/components/Meter";
-import { RankingSection, type RankingRow } from "@/components/RankingList";
+import { RankingSection, type RankingRow, type SortOption } from "@/components/RankingList";
+import { EarlyNote, ResultTiles } from "@/components/ResultTiles";
 import { getCpuSeries, getRankings, type RankedPlan } from "@/lib/data";
+import { HEADLINE_METRICS, day, num, specLine, usd } from "@/lib/format";
+import { scoresArePublished } from "@/lib/scoring";
+
+export const metadata = { alternates: { canonical: "/" } };
 
 // One query per request, shared by every section below.
 const loadRankings = cache(async (): Promise<RankedPlan[] | null> => {
@@ -17,19 +21,7 @@ const loadRankings = cache(async (): Promise<RankedPlan[] | null> => {
   }
 });
 
-const usd = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const day = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-
-function spec(p: RankedPlan) {
-  return [
-    `${p.vcpu} vCPU`,
-    `${p.ramGb} GB RAM`,
-    `${p.diskGb} GB${p.diskType ? ` ${p.diskType}` : ""}`,
-    p.location,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
+const spec = (p: RankedPlan) => specLine(p, p.location);
 
 export default function Home() {
   return (
@@ -124,7 +116,13 @@ function HeroCardShell({ children }: { children?: React.ReactNode }) {
 
 async function HeroCard() {
   const rankings = await loadRankings();
-  const best = rankings?.length ? [...rankings].sort((a, b) => b.value - a.value)[0] : null;
+  const published = scoresArePublished(rankings?.length ?? 0);
+  // Before scores are published, "best value" means nothing: show the newest test.
+  const best = rankings?.length
+    ? published
+      ? [...rankings].sort((a, b) => b.value - a.value)[0]
+      : rankings[0]
+    : null;
 
   if (!best) {
     return (
@@ -148,39 +146,24 @@ async function HeroCard() {
   const values = series.map((p) => p.v);
   const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
   const variance = values.length && mean ? (Math.max(...values.map((v) => Math.abs(v - mean))) / mean) * 100 : null;
-  const scores: [string, number | null][] = [
-    ["CPU", best.cpu],
-    ["Disk", best.disk],
-    ["Network", best.network],
-    ["Stability", best.stability],
-  ];
-
   return (
     <HeroCardShell>
       <div className="rc-head">
         <div>
           <div className="rc-name">
-            {best.provider} {best.plan}
+            <Link href={`/plan/${best.planSlug}`}>
+              {best.provider} {best.plan}
+            </Link>
           </div>
           <div className="rc-spec">{spec(best)}</div>
         </div>
-        <span className="pill">Best value right now</span>
+        <span className="pill">{published ? "Best value right now" : "Latest test"}</span>
       </div>
       <div className="rc-price">
         <b>${usd(best.priceUsd)}</b>
         <span>/mo</span>
       </div>
-      <div className="scores">
-        {scores.map(([l, v]) => (
-          <div className="sc" key={l}>
-            <div className="v" title={v === null ? "Not measured yet" : undefined}>
-              {v ?? "—"}
-            </div>
-            <div className="l">{l}</div>
-            <Meter value={v} />
-          </div>
-        ))}
-      </div>
+      <ResultTiles scores={best} metrics={best.metrics} published={published} />
       {values.length > 1 && (
         <div className="rc-chart">
           <div className="t">
@@ -237,35 +220,94 @@ async function Rankings() {
     );
   }
 
-  const rows: RankingRow[] = rankings.map((p) => ({
-    trialId: p.trialId,
-    provider: p.provider,
-    isSponsor: p.isSponsor,
-    plan: p.plan,
-    spec: `${p.plan} · ${spec(p)}`,
-    priceUsd: p.priceUsd,
-    scores: [p.cpu, p.disk, p.network, p.stability],
-    overall: p.overall,
-    value: p.value,
-    stability: p.stability,
-  }));
+  const published = scoresArePublished(rankings.length);
+  const rows = rankings.map((p) => (published ? scoredRow(p) : rawRow(p)));
+  const count = `${rows.length} plan${rows.length === 1 ? "" : "s"}`;
 
   return (
     <RankingSection
       rows={rows}
       title="Rankings"
-      subtitle={`Latest official test for each plan · ${rows.length} plan${rows.length === 1 ? "" : "s"}`}
-    />
+      subtitle={`Latest official test for each plan · ${count}`}
+      sorts={published ? SCORE_SORTS : RAW_SORTS}
+    >
+      {!published && <EarlyNote ranked={rankings.length} />}
+    </RankingSection>
   );
+}
+
+const SCORE_SORTS: SortOption[] = [
+  { key: "value", label: "Best value" },
+  { key: "overall", label: "Raw performance" },
+  { key: "stability", label: "Stability" },
+];
+const RAW_SORTS: SortOption[] = [
+  { key: "price", label: "Lowest price" },
+  { key: "cpu", label: "CPU" },
+  { key: "disk", label: "Disk" },
+  { key: "network", label: "Network" },
+];
+
+const base = (p: RankedPlan) => ({
+  id: p.trialId,
+  provider: p.provider,
+  isSponsor: p.isSponsor,
+  href: `/plan/${p.planSlug}`,
+  spec: `${p.plan} · ${spec(p)}`,
+  price: `$${usd(p.priceUsd)}/mo`,
+});
+
+function scoredRow(p: RankedPlan): RankingRow {
+  const cells = (
+    [
+      ["CPU", p.cpu],
+      ["Disk", p.disk],
+      ["Network", p.network],
+      ["Stability", p.stability],
+    ] as const
+  ).map(([label, v]) => ({
+    label,
+    value: v === null ? "—" : String(v),
+    meter: v,
+    title: v === null ? "Not measured yet" : undefined,
+  }));
+  return {
+    ...base(p),
+    cells,
+    big: { value: String(p.overall), label: "overall" },
+    priceNote: `${p.value.toFixed(1)} pts/$`,
+    sort: { value: p.value, overall: p.overall, stability: p.stability },
+  };
+}
+
+function rawRow(p: RankedPlan): RankingRow {
+  const cells = HEADLINE_METRICS.map((m) => {
+    const v = p.metrics[m.key];
+    return { label: m.short, value: v === undefined ? "—" : num(v), title: m.label };
+  });
+  const m = p.metrics;
+  return {
+    ...base(p),
+    cells,
+    sort: {
+      price: -p.priceUsd,
+      cpu: m.sevenzip_mips ?? null,
+      disk: m.yabs_fio_4k_total_iops ?? null,
+      network: m.yabs_iperf4_recv_median_mbps ?? null,
+    },
+  };
 }
 
 async function CpuChart() {
   const rankings = await loadRankings();
   const bars = (rankings ?? [])
-    .filter((p) => p.sevenZipMips !== null)
-    .map((p) => ({ name: `${p.provider} ${p.plan}`, value: p.sevenZipMips as number }));
+    .filter((p) => p.metrics.sevenzip_mips !== undefined)
+    .map((p) => ({ name: `${p.provider} ${p.plan}`, value: p.metrics.sevenzip_mips }));
   if (bars.length < 2) return null;
-  const best = [...(rankings ?? [])].sort((a, b) => b.value - a.value)[0];
+  // The highlighted bar is the best-value plan, which only exists once scores are published.
+  const best = scoresArePublished(rankings!.length)
+    ? [...rankings!].sort((a, b) => b.value - a.value)[0]
+    : undefined;
 
   return (
     <section className="sec">
