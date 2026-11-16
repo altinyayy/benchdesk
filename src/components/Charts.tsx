@@ -2,7 +2,7 @@
 
 const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
-export function Sparkline({ points, label }: { points: number[]; label: string }) {
+export function Sparkline({ points, label, endLabel = "end" }: { points: number[]; label: string; endLabel?: string }) {
   if (points.length < 2) return null;
   const L = 0, R = 400, T = 8, B = 70;
   const lo = Math.min(...points);
@@ -18,7 +18,7 @@ export function Sparkline({ points, label }: { points: number[]; label: string }
       <path d={d} fill="none" style={{ stroke: "var(--line)" }} strokeWidth={2} strokeLinejoin="round" />
       <circle cx={X(minIdx)} cy={Y(lo)} r={4} style={{ fill: "var(--score-bad)" }} />
       <text x={12} y={86} textAnchor="middle">0h</text>
-      <text x={388} y={86} textAnchor="middle">end</text>
+      <text x={388} y={86} textAnchor="middle">{endLabel}</text>
     </svg>
   );
 }

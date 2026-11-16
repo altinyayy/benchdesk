@@ -327,6 +327,7 @@ export type IperfRow = {
 
 type RawData = {
   kind?: string;
+  stability?: { version?: string; plannedHours?: number | null; intervalMin?: number | null; samples?: number } | null;
   input?: string;
   cpuTest?: { version?: string | number; sysbench?: string; sevenZip?: string; threads?: number } | null;
   yabs?: {
@@ -363,14 +364,20 @@ export async function getTrialPage(id: number) {
     .limit(1);
   if (!row) return null;
 
-  const [metricRows, [raw]] = await Promise.all([
+  const [metricRows, [raw], series] = await Promise.all([
     db
       .select({ key: metrics.key, value: metrics.value, unit: metrics.unit })
       .from(metrics)
       .where(eq(metrics.trialId, id)),
     db.select({ data: rawResults.data }).from(rawResults).where(eq(rawResults.trialId, id)).limit(1),
+    db
+      .select({ key: endurancePoints.key, t: endurancePoints.recordedAt, v: endurancePoints.value })
+      .from(endurancePoints)
+      .where(eq(endurancePoints.trialId, id))
+      .orderBy(endurancePoints.recordedAt),
   ]);
   const data = (raw?.data ?? {}) as RawData;
+  const seriesOf = (key: string) => series.filter((p) => p.key === key).map((p) => p.v);
 
   return {
     id: row.id,
@@ -390,6 +397,12 @@ export async function getTrialPage(id: number) {
     system: data.yabs?.system ?? null,
     iperf: Array.isArray(data.yabs?.iperf) ? data.yabs.iperf : [],
     hasRaw: typeof data.input === "string" && data.input.length > 0,
+    stability: data.stability ?? null,
+    series: {
+      cpu: seriesOf("cpu_events_per_sec"),
+      disk: seriesOf("disk_iops"),
+      steal: seriesOf("steal_pct"),
+    },
   };
 }
 

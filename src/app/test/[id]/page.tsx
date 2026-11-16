@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
+import { Sparkline } from "@/components/Charts";
 import { Crumbs, PageShell } from "@/components/PageBits";
 import { EarlyNote, ResultTiles } from "@/components/ResultTiles";
 import { getScoreStatus, getTrialPage, type IperfRow } from "@/lib/data";
@@ -183,6 +184,8 @@ async function TestContent({ id }: { id: string }) {
         </section>
       )}
 
+      {m.stability_samples !== undefined && <StabilitySection t={t} />}
+
       <section className="sec">
         <div className="sh">
           <div>
@@ -218,6 +221,7 @@ async function TestContent({ id }: { id: string }) {
                 t.cpuTest?.sysbench,
                 t.cpuTest?.sevenZip?.split(":")[0]?.trim(),
                 t.yabsVersion && `yabs.sh ${t.yabsVersion}`,
+                t.stability?.plannedHours && `${t.stability.plannedHours}-hour stability run`,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -233,6 +237,92 @@ async function TestContent({ id }: { id: string }) {
         )}
       </section>
     </>
+  );
+}
+
+type Trial = NonNullable<Awaited<ReturnType<typeof load>>>;
+
+function StabilitySection({ t }: { t: Trial }) {
+  const m = t.metrics;
+  const hours = m.stability_hours ?? 0;
+  const span = `${Math.round(hours)}h`;
+  const rows: [string, string | null, string][] = [
+    [
+      "Typical CPU speed (all threads)",
+      m.stability_cpu_multi_median_eps !== undefined ? `${exact(m.stability_cpu_multi_median_eps)} events/s` : null,
+      "Median of every sample.",
+    ],
+    [
+      "CPU variation",
+      m.stability_cpu_multi_cv_pct !== undefined ? `${m.stability_cpu_multi_cv_pct.toFixed(1)}%` : null,
+      "How much the speed moved around. Lower is steadier.",
+    ],
+    [
+      "CPU at its worst",
+      m.stability_cpu_multi_floor_pct !== undefined ? `${m.stability_cpu_multi_floor_pct.toFixed(0)}% of typical` : null,
+      "The slowest 5% of samples, compared with the median.",
+    ],
+    [
+      "CPU steal under load",
+      m.stability_steal_avg_pct !== undefined
+        ? `${m.stability_steal_avg_pct.toFixed(2)}% avg · ${m.stability_steal_max_pct?.toFixed(1) ?? "—"}% max`
+        : null,
+      "CPU time the host gave to other customers while we asked for all of it.",
+    ],
+    [
+      "Disk 4K IOPS",
+      m.stability_disk_iops_median !== undefined
+        ? `${exact(m.stability_disk_iops_median)} typical · ${m.stability_disk_iops_cv_pct?.toFixed(1) ?? "—"}% variation`
+        : null,
+      "fio 4K random read/write, 20 seconds per sample.",
+    ],
+  ];
+  return (
+    <section className="sec">
+      <div className="sh">
+        <div>
+          <h2>Stability</h2>
+          <p>
+            {m.stability_samples} samples over {hours.toFixed(hours < 10 ? 1 : 0)} hours
+            {t.stability?.intervalMin ? `, one every ${t.stability.intervalMin} minutes` : ""}. Each sample is about a
+            minute of CPU and disk work; the server is idle in between.
+          </p>
+        </div>
+      </div>
+      <div className="cards">
+        {t.series.cpu.length > 1 && (
+          <div className="chart">
+            <div className="chart-title">CPU, all threads (events/s)</div>
+            <Sparkline points={t.series.cpu} label="CPU speed over the stability run" endLabel={span} />
+          </div>
+        )}
+        {t.series.disk.length > 1 && (
+          <div className="chart">
+            <div className="chart-title">Disk, 4K random IOPS</div>
+            <Sparkline points={t.series.disk} label="Disk IOPS over the stability run" endLabel={span} />
+          </div>
+        )}
+      </div>
+      <div className="tablewrap" style={{ marginTop: 12 }}>
+        <table className="tbl">
+          <tbody>
+            {rows
+              .filter(([, v]) => v !== null)
+              .map(([label, v, note]) => (
+                <tr key={label}>
+                  <td>
+                    {label}
+                    <div className="muted" style={{ fontSize: 13 }}>
+                      {note}
+                    </div>
+                  </td>
+                  <td className="num">{v}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 

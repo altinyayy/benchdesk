@@ -45,8 +45,8 @@ export default function Methodology() {
 
       <h2>Where we are today</h2>
       <p>
-        The 48-hour stability run is still being built. Until it&apos;s ready, every official result comes from one
-        short run of our <a href="/bench.sh">bench.sh</a> script (about 20 minutes) on a clean server:
+        Every official result comes from our <a href="/bench.sh">bench.sh</a> script on a clean server, run as{" "}
+        <code>bench.sh --hours 48</code>: about 20 minutes of benchmarks, then the 48-hour stability run.
       </p>
       <ul>
         <li>
@@ -63,9 +63,17 @@ export default function Methodology() {
           use the median across locations, so one busy server doesn&apos;t sink a result.
         </li>
         <li>
-          <strong>Stability:</strong> not measured yet. Plans show &ldquo;—&rdquo; here until the 48-hour run is live.
+          <strong>Stability:</strong> every 30 minutes for 48 hours (97 samples), sysbench runs for 20 seconds on 1
+          thread and on all threads, and fio runs 20 seconds of 4K random reads and writes. While all threads are busy we
+          also read how much CPU time the host gave to someone else (&ldquo;steal&rdquo;). The server sits idle the rest
+          of the time, so this is a light load, not a stress test.
         </li>
       </ul>
+      <p>
+        The stability score looks at how much CPU speed varies across the samples, how slow the slowest 5% of samples
+        are compared with a typical one, average CPU steal, and how much disk IOPS vary. Tests from before the
+        48-hour run show &ldquo;—&rdquo; for stability.
+      </p>
       <p>We don&apos;t use Geekbench: its license doesn&apos;t cover publishing scores on a site like this one.</p>
 
       <h2 id="scores">How scores work</h2>
