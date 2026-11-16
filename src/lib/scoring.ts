@@ -12,6 +12,15 @@
 // 0.2: CPU from sysbench + 7-Zip instead of Geekbench (15.11.2026).
 export const METHODOLOGY_VERSION = "0.2";
 
+/**
+ * Percentiles mean little with only a few tests (a lone test scores 50 in
+ * everything), so scores stay hidden on the site until this many plans have
+ * an official result. Until then pages show the raw measurements.
+ */
+export const MIN_PLANS_FOR_SCORES = 5;
+
+export const scoresArePublished = (rankedPlans: number) => rankedPlans >= MIN_PLANS_FOR_SCORES;
+
 export type Category = "cpu" | "disk" | "network" | "stability";
 
 type MetricDef = { key: string; category: Category; higherIsBetter: boolean; label: string };

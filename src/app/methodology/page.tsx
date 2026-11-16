@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { METHODOLOGY_VERSION, SCORED_METRICS } from "@/lib/scoring";
+import { METHODOLOGY_VERSION, MIN_PLANS_FOR_SCORES, SCORED_METRICS } from "@/lib/scoring";
 
 export const metadata: Metadata = {
   title: "Methodology",
+  alternates: { canonical: "/methodology" },
   description: "How Benchdesk tests VPS plans: the same open script on every server, a 48-hour stability run, and public raw results.",
 };
 
@@ -64,13 +65,18 @@ export default function Methodology() {
       </ul>
       <p>We don&apos;t use Geekbench: its license doesn&apos;t cover publishing scores on a site like this one.</p>
 
-      <h2>How scores work</h2>
+      <h2 id="scores">How scores work</h2>
       <ol>
         <li>Each metric is converted to a percentile among all official tests.</li>
         <li>Category scores (CPU, disk, network, stability) are the average of their metrics.</li>
         <li>The overall score is the average of the categories a plan has results for.</li>
         <li>The value score divides the overall score by the monthly price.</li>
       </ol>
+      <p>
+        Because scores compare plans with each other, they mean little with only a few tests: a plan tested on its own
+        lands at exactly 50 in everything. So we only show scores once {MIN_PLANS_FOR_SCORES} plans have an official
+        result. Until then, pages show the raw measurements instead.
+      </p>
       <p>
         Raw results are always stored, so when the formula changes every test is recalculated. Each score records the
         methodology version it was calculated with. Current version: <strong>{METHODOLOGY_VERSION}</strong>.
