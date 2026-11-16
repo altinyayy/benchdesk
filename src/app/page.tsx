@@ -66,7 +66,7 @@ export default function Home() {
           <div className="step">
             <span className="n">Step 1</span>
             <h3>Clean install</h3>
-            <p>Every plan starts fresh on Ubuntu 24.04. We don&apos;t tweak any settings.</p>
+            <p>Every plan starts fresh on the newest Ubuntu LTS. We don&apos;t tweak any settings.</p>
           </div>
           <div className="step">
             <span className="n">Step 2</span>
