@@ -37,8 +37,10 @@ async function Trials() {
         {hasPlans ? (
           <>
             <p className="muted">
-              On a fresh test server, run <code>curl -sL https://benchdesk.net/bench.sh | bash</code> and paste
-              everything it prints. It takes about 20 minutes: CPU tests first, then yabs.sh for disk and network.
+              On a fresh test server, inside tmux, run{" "}
+              <code>curl -sL https://benchdesk.net/bench.sh | bash -s -- --hours 48 | tee bench.txt</code> and paste
+              everything it prints. About 20 minutes of CPU, disk and network tests, then 48 hours of stability samples.
+              Without <code>--hours 48</code> you get only the 20-minute part (no stability score).
             </p>
             <BenchForm providers={choices} />
           </>

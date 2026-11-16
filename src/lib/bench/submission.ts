@@ -1,6 +1,7 @@
 /**
  * Combines everything an admin can paste: the output of public/bench.sh
- * (Benchdesk CPU test + yabs.sh), or yabs.sh output alone.
+ * (Benchdesk CPU test + yabs.sh, optionally followed by the stability run),
+ * or yabs.sh output alone.
  *
  * Geekbench results are never stored: its license doesn't cover publishing
  * scores on a commercial site (decision 15.11.2026). Old pastes that include
@@ -9,6 +10,10 @@
 
 import { cleanTerminalText, MAX_INPUT_CHARS, parseYabs, type Metric, type YabsResult } from "../yabs/parse";
 import { CPU_END, CPU_START, parseCpuSection, type CpuResult } from "./cpu";
+import { parseStabilitySection, stripStabilitySection, type StabilityResult } from "./stability";
+
+// A 48-hour stability run adds only ~100 lines, but allow long custom runs too.
+const MAX_SUBMISSION_CHARS = 400_000;
 
 export type Submission = {
   metrics: Metric[];
@@ -19,6 +24,7 @@ export type Submission = {
   finishedAt: Date | null;
   yabs: YabsResult | null;
   cpu: CpuResult | null;
+  stability: StabilityResult | null;
   warnings: string[];
 };
 
@@ -32,11 +38,19 @@ const LIMITS: { test: RegExp; min: number; max: number }[] = [
 const YABS_MARKER = /Yet-Another-Bench-Script|Basic System Information|fio Disk Speed Tests|iperf3 Network Speed Tests|\{\s*"version"/;
 
 export function parseSubmission(input: string): SubmissionOutcome {
-  if (input.length > MAX_INPUT_CHARS) {
+  if (input.length > MAX_SUBMISSION_CHARS) {
+    return { ok: false, error: `The pasted text is too long (max ${MAX_SUBMISSION_CHARS.toLocaleString("en-US")} characters).` };
+  }
+  const full = cleanTerminalText(input);
+  if (!full.trim()) return { ok: false, error: "Paste the benchmark output first." };
+
+  const stab = parseStabilitySection(full);
+  if (stab && "error" in stab) return { ok: false, error: stab.error };
+  const stability = stab;
+  const clean = stability ? stripStabilitySection(full) : full;
+  if (clean.length > MAX_INPUT_CHARS) {
     return { ok: false, error: `The pasted text is too long (max ${MAX_INPUT_CHARS.toLocaleString("en-US")} characters).` };
   }
-  const clean = cleanTerminalText(input);
-  if (!clean.trim()) return { ok: false, error: "Paste the benchmark output first." };
 
   const cpu = parseCpuSection(clean);
   for (const m of cpu?.metrics ?? []) {
@@ -56,14 +70,18 @@ export function parseSubmission(input: string): SubmissionOutcome {
 
   if (!cpu && !yabs) return { ok: false, error: "This doesn't look like Benchdesk or yabs.sh output." };
 
-  const warnings = [...(cpu?.warnings ?? []), ...(yabs?.warnings ?? [])];
+  const warnings = [...(cpu?.warnings ?? []), ...(yabs?.warnings ?? []), ...(stability?.warnings ?? [])];
   const yabsMetrics = yabs?.metrics ?? [];
   if (yabsMetrics.some((m) => m.key.startsWith("geekbench")))
     warnings.push("Geekbench results were ignored (not licensed for our use). Run yabs with -g, or use bench.sh.");
   if (!cpu) warnings.push("No Benchdesk CPU test in the output (CPU score will be empty). Use bench.sh.");
   if (!yabs) warnings.push("No yabs.sh output (disk and network scores will be empty).");
 
-  const metrics = [...(cpu?.metrics ?? []), ...yabsMetrics.filter((m) => !m.key.startsWith("geekbench"))];
+  const metrics = [
+    ...(cpu?.metrics ?? []),
+    ...yabsMetrics.filter((m) => !m.key.startsWith("geekbench")),
+    ...(stability?.metrics ?? []),
+  ];
   if (metrics.length === 0) return { ok: false, error: "No benchmark results found." };
 
   if (cpu && yabs?.system.cores != null && cpu.threads != null && cpu.threads !== yabs.system.cores)
@@ -78,9 +96,11 @@ export function parseSubmission(input: string): SubmissionOutcome {
       ramGib: yabs?.system.ramGib ?? null,
       // bench.sh runs the CPU test first, then yabs.
       startedAt: cpu?.startedAt ?? yabs?.startedAt ?? null,
-      finishedAt: yabs?.finishedAt ?? null,
+      // The stability run comes last, so it marks the end of the test.
+      finishedAt: stability?.finishedAt ?? yabs?.finishedAt ?? null,
       yabs,
       cpu,
+      stability,
       warnings,
     },
   };

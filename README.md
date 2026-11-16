@@ -65,12 +65,20 @@ Failed logins are limited to 5 per IP per 15 minutes.
 
 ## Test results
 
-On a fresh test server: `curl -sL https://benchdesk.net/bench.sh | bash` (~20 min),
+On a fresh test server, inside tmux:
+
+    curl -sL https://benchdesk.net/bench.sh | bash -s -- --hours 48 | tee bench.txt
+
 then paste everything into `/admin/trials`. `public/bench.sh` runs sysbench and the
-7-Zip benchmark, then yabs.sh (pinned commit, `-g` = no Geekbench) for disk and network.
+7-Zip benchmark, then yabs.sh (pinned commit, `-g` = no Geekbench) for disk and network
+(~20 min). With `--hours N` it then samples every 30 minutes for N hours: sysbench on
+1 and all threads (20 s each, CPU steal read during the latter) and fio 4K randrw (20 s).
+Without `--hours` there is no stability score.
 Plain yabs.sh output (text or `-j` JSON) is accepted too; it just has no CPU score.
 
-- Parsers: `src/lib/bench/submission.ts` (entry point), `src/lib/bench/cpu.ts`, `src/lib/yabs/parse.ts`.
+- Parsers: `src/lib/bench/submission.ts` (entry point), `src/lib/bench/cpu.ts`, `src/lib/bench/stability.ts`,
+  `src/lib/yabs/parse.ts`. Stability samples go to `endurance_points`; the summary (variation, worst 5%,
+  steal, disk variation) to `metrics` as `stability_*`.
   Implausible values and duplicate pastes are rejected; the raw output is kept in `raw_results`.
 - **Geekbench is never stored**: its license doesn't cover publishing scores here (15.11.2026).
 - **Official** results are scored and ranked; **community** results are stored but never ranked.

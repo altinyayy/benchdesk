@@ -144,8 +144,12 @@ async function HeroCard() {
 
   const series = await getCpuSeries(best.trialId).catch(() => []);
   const values = series.map((p) => p.v);
-  const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
-  const variance = values.length && mean ? (Math.max(...values.map((v) => Math.abs(v - mean))) / mean) * 100 : null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const typical = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  // Lowest sample as a share of the median: "how bad did it get".
+  const worstPct = values.length && typical ? Math.round((100 * sorted[0]) / typical) : null;
+  const spanH =
+    series.length > 1 ? Math.round((series[series.length - 1].t.getTime() - series[0].t.getTime()) / 3_600_000) : 0;
   return (
     <HeroCardShell>
       <div className="rc-head">
@@ -167,10 +171,10 @@ async function HeroCard() {
       {values.length > 1 && (
         <div className="rc-chart">
           <div className="t">
-            <span>CPU over the stability run</span>
-            {variance !== null && <b>±{variance.toFixed(1)}% variance</b>}
+            <span>CPU over the {spanH}-hour stability run</span>
+            {worstPct !== null && <b>Lowest point: {worstPct}% of typical</b>}
           </div>
-          <Sparkline points={values} label="CPU performance over the stability run" />
+          <Sparkline points={values} label="CPU performance over the stability run" endLabel={`${spanH}h`} />
         </div>
       )}
       <div className="rc-foot">

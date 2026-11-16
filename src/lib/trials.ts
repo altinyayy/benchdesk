@@ -4,14 +4,15 @@ import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb, schema } from "./db";
 import { METHODOLOGY_VERSION, computeScores } from "./scoring";
 import type { Submission } from "./bench/submission";
+import type { StabilitySample } from "./bench/stability";
 
-const { trials, plans, providers, locations, metrics, rawResults, scores } = schema;
+const { trials, plans, providers, locations, metrics, rawResults, scores, endurancePoints } = schema;
 
 type DB = ReturnType<typeof getDb>;
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 
 // Bump when the parsers change in a way that affects stored metrics.
-export const PARSER_VERSION = 2;
+export const PARSER_VERSION = 3;
 
 export function inputHash(input: string) {
   return createHash("sha256").update(input.replace(/\r\n/g, "\n").trim()).digest("hex");
@@ -60,6 +61,22 @@ export async function saveTrial(opts: {
       .returning({ id: trials.id });
 
     await tx.insert(metrics).values(result.metrics.map((m) => ({ trialId: trial.id, ...m })));
+    if (result.stability) {
+      // One row per sample and measurement; "cpu_events_per_sec" (all threads)
+      // is the series the hero card and test page chart.
+      const series: [string, keyof Omit<StabilitySample, "t">][] = [
+        ["cpu_events_per_sec", "cpuN"],
+        ["cpu_single_eps", "cpu1"],
+        ["steal_pct", "steal"],
+        ["disk_iops", "iops"],
+      ];
+      const points = result.stability.samples.flatMap((smp) =>
+        series
+          .filter(([, k]) => smp[k] !== null)
+          .map(([key, k]) => ({ trialId: trial.id, recordedAt: smp.t, key, value: smp[k] as number })),
+      );
+      for (let i = 0; i < points.length; i += 1000) await tx.insert(endurancePoints).values(points.slice(i, i + 1000));
+    }
     await tx.insert(rawResults).values({
       trialId: trial.id,
       data: {
@@ -71,6 +88,12 @@ export async function saveTrial(opts: {
           sysbench: result.cpu.sysbenchVersion,
           sevenZip: result.cpu.sevenZipVersion,
           threads: result.cpu.threads,
+        },
+        stability: result.stability && {
+          version: result.stability.version,
+          plannedHours: result.stability.plannedHours,
+          intervalMin: result.stability.intervalMin,
+          samples: result.stability.samples.length,
         },
         yabs: result.yabs && {
           format: result.yabs.format,

@@ -10,7 +10,8 @@
  */
 
 // 0.2: CPU from sysbench + 7-Zip instead of Geekbench (15.11.2026).
-export const METHODOLOGY_VERSION = "0.2";
+// 0.3: Stability from the 48-hour run (16.11.2026).
+export const METHODOLOGY_VERSION = "0.3";
 
 /**
  * Percentiles mean little with only a few tests (a lone test scores 50 in
@@ -34,7 +35,10 @@ export const SCORED_METRICS: MetricDef[] = [
   { key: "yabs_fio_1m_total_mbps", category: "disk", higherIsBetter: true, label: "fio 1M throughput, MB/s (mixed R/W)" },
   { key: "yabs_iperf4_send_median_mbps", category: "network", higherIsBetter: true, label: "iperf3 send, median of locations" },
   { key: "yabs_iperf4_recv_median_mbps", category: "network", higherIsBetter: true, label: "iperf3 receive, median of locations" },
-  // Stability metrics arrive with the 48-hour test script.
+  { key: "stability_cpu_multi_cv_pct", category: "stability", higherIsBetter: false, label: "CPU variation over 48 hours (%, lower is steadier)" },
+  { key: "stability_cpu_multi_floor_pct", category: "stability", higherIsBetter: true, label: "CPU at its worst 5% of the time, as % of typical" },
+  { key: "stability_steal_avg_pct", category: "stability", higherIsBetter: false, label: "CPU steal under load, average (%)" },
+  { key: "stability_disk_iops_cv_pct", category: "stability", higherIsBetter: false, label: "Disk 4K IOPS variation over 48 hours (%)" },
 ];
 
 export type TrialInput = {
